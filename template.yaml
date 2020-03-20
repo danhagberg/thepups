@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  The Pups
+
+  Provides data and stats related to dogs in the shelter and volunteers taking care of them.
+
+Globals:
+
+Resources:
+
+Outputs:

@@ -5,8 +5,95 @@ Description: >
 
   Provides data and stats related to dogs in the shelter and volunteers taking care of them.
 
+Parameters:
+  Env:
+    Description: 'The environment to deploy to.'
+    Type: 'String'
+    Default: 'dev'
+
+  ThePupsInfoSnippetsBucketName:
+    Description: 'Required. Bucket name to which output html snippets will be written'
+    Type: 'String'
+    Default: 'the-pups-snippets-2020'
+
+  ThePupsOutputDataBucketName:
+    Description: 'Required. Bucket name to which output data files will be written'
+    Type: 'String'
+    Default: 'the-pups-output-2020'
+
 Globals:
+  Function:
+    Runtime: python3.7
+    Handler: app.lambda_handler
+    Timeout: 5
+    Tags:
+      key: 'dsh:application'
+      value: 'thepups'
+    Environment:
+      Variables:
+        SNIPPETS_BUCKET: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
 
 Resources:
+  ProcessDogCSV:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: process_dog_report
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        - S3ReadPolicy:
+            BucketName: !Sub "${Env}-the-pups-uploads-2020"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+      Environment:
+        Variables:
+          OUTPUT_DATA_BUCKET: !Ref ThePupsOutputDataBucket
+      # This has to be commented out on the first run as Cloud Formation can't handle the circular dependency
+      Events:
+        DogExerciseListAdded:
+          Type: S3
+          Properties:
+            Bucket: !Ref ThePupsUploadBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: dog_exercise_list/
+                  - Name: suffix
+                    Value: .csv
 
-Outputs:
+  ThePupsLibraryLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: the-pups-common-library
+      Description: Function library layer for use across the pups application.
+      ContentUri: dependencies
+      CompatibleRuntimes:
+        - python3.7
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+
+  ThePupsUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Env}-the-pups-uploads-2020"
+      AccessControl: Private
+
+  ThePupsInfoSnippetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+      AccessControl: PublicRead
+
+  ThePupsOutputDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+      AccessControl: Private
+
+#Outputs:

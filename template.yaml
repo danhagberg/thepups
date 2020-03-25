@@ -21,19 +21,25 @@ Parameters:
     Type: 'String'
     Default: 'the-pups-output-2020'
 
+  ThePupsUploadsBucketName:
+    Description: 'Required. Bucket name to which data files will be uploaded'
+    Type: 'String'
+    Default: 'the-pups-uploads-2020'
+
 Globals:
   Function:
     Runtime: python3.7
     Handler: app.lambda_handler
-    Timeout: 5
+    Timeout: 10
     Tags:
-      key: 'dsh:application'
-      value: 'thepups'
+      dsh:application: 'thepups'
     Environment:
       Variables:
         SNIPPETS_BUCKET: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
 
 Resources:
+  # Lambda to extract data from daily dog exercise csv and output a set of HTML snippets related to dog counts by type
+  # and information on each dog.  In addition, the relevant data will be written out for downstream processing.
   ProcessDogCSV:
     Type: AWS::Serverless::Function
     Properties:
@@ -43,16 +49,16 @@ Resources:
         - !Ref ThePupsLibraryLayer
       Policies:
         - AWSLambdaExecute
+        # Policies have to use the !Sub instead of !Ref otherwise a circular dependency is created and it wont deploy
         - S3ReadPolicy:
-            BucketName: !Sub "${Env}-the-pups-uploads-2020"
+            BucketName: !Sub "${Env}-${ThePupsUploadsBucketName}"
         - S3CrudPolicy:
             BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
         - S3CrudPolicy:
             BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
       Environment:
         Variables:
-          OUTPUT_DATA_BUCKET: !Ref ThePupsOutputDataBucket
-      # This has to be commented out on the first run as Cloud Formation can't handle the circular dependency
+          OUTPUT_DATA_BUCKET: !Sub "${Env}-${ThePupsOutputDataBucketName}"
       Events:
         DogExerciseListAdded:
           Type: S3
@@ -63,10 +69,43 @@ Resources:
               S3Key:
                 Rules:
                   - Name: prefix
-                    Value: dog_exercise_list/
+                    Value: dbs_exercise_list/
                   - Name: suffix
                     Value: .csv
 
+  # Lambda to extract schedule table from DBS Schedule PDF and store as CSV in S3 bucket.
+  ConvertDbsScheduleReport:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: convert_dbs_schedule_report
+      Handler: pdftable.Handler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Timeout: 60
+      Environment:
+        Variables:
+          OUTPUT_DATA_BUCKET:
+            Ref: ThePupsOutputDataBucket
+      Policies:
+        - AWSLambdaExecute
+        # Policies have to use the !Sub instead of !Ref otherwise a circular dependency is created and it wont deploy
+        - S3ReadPolicy:
+            BucketName: !Sub "${Env}-${ThePupsUploadsBucketName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+      Events:
+        DogExerciseListAdded:
+          Type: S3
+          Properties:
+            Bucket: !Ref ThePupsUploadBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: dbs_schedule/
+                  - Name: suffix
+                    Value: .pdf
   ThePupsLibraryLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -81,7 +120,7 @@ Resources:
   ThePupsUploadBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${Env}-the-pups-uploads-2020"
+      BucketName: !Sub "${Env}-${ThePupsUploadsBucketName}"
       AccessControl: Private
 
   ThePupsInfoSnippetsBucket:

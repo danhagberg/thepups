@@ -195,7 +195,8 @@ def lambda_handler(event, context):
     bucket = event['Records'][0]['s3']['bucket']['name']
     file = event['Records'][0]['s3']['object']['key']
     s3 = boto3.resource('s3')
-    logger.info(f'Received Event for : Bucket: {bucket}, File: {file}')
+    logger.info(f'Received Event for Bucket: {bucket}, File: {file}')
+    logger.info(f'Output Buckets: Output Data: {output_data_bucket}, Snippets: {snippets_bucket}')
     dog_list = s3.Object(bucket, file)
     dog_list_csv = dog_list.get()['Body'].read().decode('utf-8')
     dogs, report_time = get_dogs(dog_list_csv)
@@ -205,10 +206,11 @@ def lambda_handler(event, context):
     write_to_s3(snippets_bucket, 'dbs_dog_counts.html', get_dog_counts_as_html(filter_for_dbs(dogs_df)))
     write_to_s3(snippets_bucket, 'staff_dog_counts.html', get_dog_counts_as_html(filter_for_non_dbs(dogs_df)))
     write_to_s3(snippets_bucket, 'dog_info.html', get_dog_info_as_html(dogs_df))
-    write_to_s3(output_data_bucket, 'dog-counts.csv', get_dog_counts_dataframe(dogs_df).to_csv())
-    write_to_s3(output_data_bucket, 'dogs-on-campus.json', get_dogs_as_json(dogs_df, report_time))
+    write_to_s3(output_data_bucket, 'current_dogs/dog-counts.csv', get_dog_counts_dataframe(dogs_df).to_csv())
+    write_to_s3(output_data_bucket, 'current_dogs/dogs-on-campus.json', get_dogs_as_json(dogs_df, report_time))
 
     return {
         'statusCode': 200,
-        'body': json.dumps('HTML snippets created and stored in s3')
+        'body': json.dumps(
+            f'HTML snippets created and stored in {snippets_bucket}. Data output to {output_data_bucket}')
     }

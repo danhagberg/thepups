@@ -106,6 +106,41 @@ Resources:
                     Value: dbs_schedule/
                   - Name: suffix
                     Value: .pdf
+
+  # Lambda to extract data from DBS schedule csv and output a set of HTML snippets related to shift counts by type
+  # In addition, the relevant data will be written out for downstream processing.
+  CaclulateShiftCounts:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: calculate_shift_counts
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        # Policies have to use the !Sub instead of !Ref otherwise a circular dependency is created and it wont deploy
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+      Environment:
+        Variables:
+          OUTPUT_DATA_BUCKET: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+      Events:
+        DbsShiftCsvAdded:
+          Type: S3
+          Properties:
+            Bucket: !Ref ThePupsOutputDataBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: dbs_schedule/
+                  - Name: suffix
+                    Value: .csv
+
+  # Common code layer used by other python modules in this template.
   ThePupsLibraryLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:

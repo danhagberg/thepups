@@ -11,6 +11,8 @@ import pandas as pd
 from dateutil import parser
 from dateutil.tz import gettz
 
+import the_pups as thepups
+
 snippets_bucket = os.environ['SNIPPETS_BUCKET']
 output_data_bucket = os.environ['OUTPUT_DATA_BUCKET']
 logger = logging.getLogger()
@@ -155,13 +157,6 @@ def get_dog_counts_as_html(dogs_df):
     return pd.DataFrame(dc_out.to_records()).to_html(index=False, border=0, classes="table table-striped table-hover")
 
 
-def write_to_s3(bucket, file_name, content):
-    s3 = boto3.resource('s3')
-    path = file_name
-    encoded_content = content.encode('utf-8')
-    s3.Bucket(bucket).put_object(Key=path, Body=encoded_content)
-
-
 def get_dog_info_as_html(dogs_df):
     dog_info_df = dogs_df[['holder', 'Level', 'location', 'kc', 'id']].rename_axis('name')
     dog_info_df = dog_info_df.rename_axis('Name')
@@ -201,13 +196,13 @@ def lambda_handler(event, context):
     dog_list_csv = dog_list.get()['Body'].read().decode('utf-8')
     dogs, report_time = get_dogs(dog_list_csv)
     dogs_df = get_dog_dataframe(dogs)
-    write_to_s3(snippets_bucket, 'dog_count_timestamp.html',
+    thepups.write_to_s3(snippets_bucket, 'dog_count_timestamp.html',
                 datetime.strftime(report_time, '%A, %b %d, %Y at %I:%M %p '))
-    write_to_s3(snippets_bucket, 'dbs_dog_counts.html', get_dog_counts_as_html(filter_for_dbs(dogs_df)))
-    write_to_s3(snippets_bucket, 'staff_dog_counts.html', get_dog_counts_as_html(filter_for_non_dbs(dogs_df)))
-    write_to_s3(snippets_bucket, 'dog_info.html', get_dog_info_as_html(dogs_df))
-    write_to_s3(output_data_bucket, 'current_dogs/dog-counts.csv', get_dog_counts_dataframe(dogs_df).to_csv())
-    write_to_s3(output_data_bucket, 'current_dogs/dogs-on-campus.json', get_dogs_as_json(dogs_df, report_time))
+    thepups.write_to_s3(snippets_bucket, 'dbs_dog_counts.html', get_dog_counts_as_html(filter_for_dbs(dogs_df)))
+    thepups.write_to_s3(snippets_bucket, 'staff_dog_counts.html', get_dog_counts_as_html(filter_for_non_dbs(dogs_df)))
+    thepups.write_to_s3(snippets_bucket, 'dog_info.html', get_dog_info_as_html(dogs_df))
+    thepups.write_to_s3(output_data_bucket, 'current_dogs/dog-counts.csv', get_dog_counts_dataframe(dogs_df).to_csv())
+    thepups.write_to_s3(output_data_bucket, 'current_dogs/dogs-on-campus.json', get_dogs_as_json(dogs_df, report_time))
 
     return {
         'statusCode': 200,

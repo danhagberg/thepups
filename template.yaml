@@ -140,6 +140,65 @@ Resources:
                   - Name: suffix
                     Value: .csv
 
+  # Lambda to calculate the DBS needs by DBS level given the current dogs counts and DBS schedule.
+  # Outputs will be a set of HTML snippets related to shift needs by shift and type.
+  # In addition, the relevant data will be written out for downstream processing.
+  CaclulateShiftNeeds:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: calculate_shift_needs
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        # Policies have to use the !Sub instead of !Ref otherwise a circular dependency is created and it wont deploy
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+      Environment:
+        Variables:
+          PROCESSED_DATA_BUCKET: !Sub "${Env}-${ThePupsOutputDataBucketName}"
+          UPLOADS_BUCKET: !Sub "${Env}-${ThePupsUploadsBucketName}"
+      Events:
+        DbsShiftCountsAdded:
+          Type: S3
+          Properties:
+            Bucket: !Ref ThePupsOutputDataBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: shift_counts/
+                  - Name: suffix
+                    Value: .csv
+        DogCountsAdded:
+          Type: S3
+          Properties:
+            Bucket: !Ref ThePupsOutputDataBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: current_dogs/
+                  - Name: suffix
+                    Value: .csv
+        ShiftExceptionsUploaded:
+          Type: S3
+          Properties:
+            Bucket: !Ref ThePupsUploadBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: dbs_exceptions/
+                  - Name: suffix
+                    Value: .csv
+
   # Common code layer used by other python modules in this template.
   ThePupsLibraryLayer:
     Type: AWS::Serverless::LayerVersion

@@ -59,3 +59,11 @@ def write_to_s3(bucket, file_name, content):
     path = file_name
     encoded_content = content.encode('utf-8')
     s3.Bucket(bucket).put_object(Key=path, Body=encoded_content)
+
+
+def read_from_s3(bucket, file):
+    s3 = boto3.resource('s3')
+    csv_object = s3.Object(bucket, file)
+    csv_data = csv_object.get()['Body'].read().decode('utf-8')
+    return csv_data
+

@@ -7,7 +7,6 @@ from io import StringIO
 from typing import Tuple
 
 import pandas as pd
-from boto3 import s3
 from botocore.exceptions import ClientError
 
 import the_pups as thepups
@@ -269,25 +268,30 @@ def lambda_handler(event, context):
     dog_counts_df = transform_dog_counts(dog_counts_csv, 5)
 
     shift_counts_df = get_shift_counts(processed_bucket, shift_counts_file)
-    shift_exceptions = get_shift_exceptions(processed_bucket, shift_exceptions_file)
-    shift_counts_df = apply_exceptions(shift_counts_df, shift_exceptions)
+    dog_counts_range = dog_counts_df.index.min(), dog_counts_df.index.max()
+    shift_range = shift_counts_df.Start.min(), shift_counts_df.Start.max()
+    if not thepups.is_within_or_overlap(dog_counts_range, shift_range):
+        raise Exception(
+            f'DBS schedule is not within shift need period. Shifts: {shift_range}, Needs: {dog_counts_range}')
+        shift_exceptions = get_shift_exceptions(processed_bucket, shift_exceptions_file)
+        shift_counts_df = apply_exceptions(shift_counts_df, shift_exceptions)
 
-    sc_df = combine_dog_and_shift_counts(dog_counts_df, shift_counts_df)
+        sc_df = combine_dog_and_shift_counts(dog_counts_df, shift_counts_df)
 
-    # For covid-19
-    # coverage = calc_coverage(sc_df)
-    coverage = calc_coverage_during_closure(sc_df)
-    needs_df = drop_covered_shifts(coverage)
+        # For covid-19
+        # coverage = calc_coverage(sc_df)
+        coverage = calc_coverage_during_closure(sc_df)
+        needs_df = drop_covered_shifts(coverage)
 
-    if needs_df.empty:
-        needs_html = get_all_shifts_covered_html()
-    else:
-        formatted_needs_df = format_shift_counts(needs_df)
+        if needs_df.empty:
+            needs_html = get_all_shifts_covered_html()
+        else:
+            formatted_needs_df = format_shift_counts(needs_df)
         needs_html = get_needs_as_html(formatted_needs_df)
 
-    thepups.write_to_s3(snippets_bucket, 'dbs_shift_needs.html', needs_html)
-    thepups.write_to_s3('the-pups-info-snippets', 'dbs_shift_needs_timestamp.html',
-                        datetime.strftime(datetime.now(), '%A, %b %d, %Y at %I:%M %p '))
+        thepups.write_to_s3(snippets_bucket, 'dbs_shift_needs.html', needs_html)
+        thepups.write_to_s3('the-pups-info-snippets', 'dbs_shift_needs_timestamp.html',
+                            datetime.strftime(datetime.now(), '%A, %b %d, %Y at %I:%M %p '))
 
     return {
         'statusCode': 200,

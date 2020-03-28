@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+from typing import Tuple
 
 import boto3
 import pandas as pd
@@ -67,3 +68,10 @@ def read_from_s3(bucket, file):
     csv_data = csv_object.get()['Body'].read().decode('utf-8')
     return csv_data
 
+
+def is_within_timeframe(timeframe: Tuple[datetime, datetime], time: datetime):
+    return timeframe[0] <= time <= timeframe[1]
+
+
+def is_within_or_overlap(timeframe: Tuple[datetime, datetime], shift: Tuple[datetime, datetime]):
+    return is_within_timeframe(timeframe, shift[0]) or is_within_timeframe(timeframe, shift[1])

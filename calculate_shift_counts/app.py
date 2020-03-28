@@ -208,7 +208,7 @@ def lambda_handler(event, context):
                         datetime.strftime(report_time, '%A, %b %d, %Y at %I:%M %p '))
     thepups.write_to_s3(snippets_bucket, 'dbs_shift_counts.html', get_shift_counts_as_html(dbs_assigned_fmt))
     write_as_csv_to_s3(output_data_bucket, 'shift_counts/shift-counts.csv', dbs_assigned)
-    print(f'Saved formatted html for shift counts in the-pups-info-snippets')
+    print(f'Saved html for shift counts in {snippets_bucket} and processed shift counts in {output_data_bucket}')
 
     return {
         'statusCode': 200,

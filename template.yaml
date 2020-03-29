@@ -11,6 +11,11 @@ Parameters:
     Type: 'String'
     Default: 'dev'
 
+  XRayTracing:
+    Description: 'Enable / Disable XRay Tracing'
+    Type: 'String'
+    Default: 'PassThrough'
+
   ThePupsInfoSnippetsBucketName:
     Description: 'Required. Bucket name to which output html snippets will be written'
     Type: 'String'
@@ -46,6 +51,7 @@ Globals:
     Runtime: python3.7
     Handler: app.lambda_handler
     Timeout: 10
+    Tracing: !Sub "${XRayTracing}"
     Tags:
       dsh:application: 'thepups'
     Environment:

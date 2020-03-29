@@ -301,6 +301,20 @@ Resources:
       BucketName: !Sub "${Env}-${ThePupsOutputDataBucketName}"
       AccessControl: Private
 
+  ThePupsInfoSnippetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ThePupsInfoSnippetsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Principal: '*'
+          Action:
+            - s3:GetObject
+          Effect: Allow
+          Resource: !Sub '${ThePupsInfoSnippetsBucket.Arn}/*'
+
 
   CampusDogHistoryDynDB:
     Type: AWS::DynamoDB::Table

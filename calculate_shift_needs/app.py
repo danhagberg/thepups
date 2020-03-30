@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 import os
 from collections import namedtuple
@@ -15,6 +16,9 @@ SESSION_DURATION_SECS = 2100  # 35 minutes per dog
 RED_TEAM_DOG_WEIGHT = 2.0
 KENNEL_COUGH_WEIGHT = 0.5
 GAA_CAPACITY_REDUCTION = 4
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 DBS_capacity = namedtuple('DBS_capacity', ['green', 'blue', 'purple'])
 
@@ -61,7 +65,7 @@ def prepare_dog_counts(dc_df):
     return dc_df
 
 
-def get_dog_counts(bucket, dog_counts_file) -> pd.DataFrame:
+def get_dog_counts(bucket, dog_counts_file) -> str:
     dog_counts_csv = thepups.read_from_s3(bucket, dog_counts_file)
     return dog_counts_csv
 
@@ -259,6 +263,28 @@ def calc_coverage_during_closure(sc_dc: pd.DataFrame) -> pd.DataFrame:
     return sc_dc
 
 
+def create_needs_output(needs_df):
+    if needs_df.empty:
+        needs_html = get_all_shifts_covered_html()
+    else:
+        formatted_needs_df = format_shift_counts(needs_df)
+    needs_html = get_needs_as_html(formatted_needs_df)
+    thepups.write_to_s3(snippets_bucket, 'dbs_shift_needs.html', needs_html)
+    thepups.write_to_s3('the-pups-info-snippets', 'dbs_shift_needs_timestamp.html',
+                        datetime.strftime(datetime.now(), '%A, %b %d, %Y at %I:%M %p '))
+
+
+def calculate_needs(dog_counts_df, shift_counts_df, shift_exceptions_file):
+    shift_exceptions = get_shift_exceptions(processed_bucket, shift_exceptions_file)
+    shift_counts_df = apply_exceptions(shift_counts_df, shift_exceptions)
+    sc_df = combine_dog_and_shift_counts(dog_counts_df, shift_counts_df)
+    # For covid-19
+    # coverage = calc_coverage(sc_df)
+    coverage = calc_coverage_during_closure(sc_df)
+    needs_df = drop_covered_shifts(coverage)
+    return needs_df
+
+
 def lambda_handler(event, context):
     dog_counts_file = 'current_dogs/dog-counts.csv'
     shift_counts_file = 'shift_counts/shift-counts.csv'
@@ -270,28 +296,12 @@ def lambda_handler(event, context):
     shift_counts_df = get_shift_counts(processed_bucket, shift_counts_file)
     dog_counts_range = dog_counts_df.index.min(), dog_counts_df.index.max()
     shift_range = shift_counts_df.Start.min(), shift_counts_df.Start.max()
-    if not thepups.is_within_or_overlap(dog_counts_range, shift_range):
-        raise Exception(
+    if thepups.is_within_or_overlap(dog_counts_range, shift_range):
+        needs_df = calculate_needs(dog_counts_df, shift_counts_df, shift_exceptions_file)
+        create_needs_output(needs_df)
+    else:
+        logger.warning(
             f'DBS schedule is not within shift need period. Shifts: {shift_range}, Needs: {dog_counts_range}')
-        shift_exceptions = get_shift_exceptions(processed_bucket, shift_exceptions_file)
-        shift_counts_df = apply_exceptions(shift_counts_df, shift_exceptions)
-
-        sc_df = combine_dog_and_shift_counts(dog_counts_df, shift_counts_df)
-
-        # For covid-19
-        # coverage = calc_coverage(sc_df)
-        coverage = calc_coverage_during_closure(sc_df)
-        needs_df = drop_covered_shifts(coverage)
-
-        if needs_df.empty:
-            needs_html = get_all_shifts_covered_html()
-        else:
-            formatted_needs_df = format_shift_counts(needs_df)
-        needs_html = get_needs_as_html(formatted_needs_df)
-
-        thepups.write_to_s3(snippets_bucket, 'dbs_shift_needs.html', needs_html)
-        thepups.write_to_s3('the-pups-info-snippets', 'dbs_shift_needs_timestamp.html',
-                            datetime.strftime(datetime.now(), '%A, %b %d, %Y at %I:%M %p '))
 
     return {
         'statusCode': 200,

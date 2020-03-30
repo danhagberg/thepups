@@ -271,6 +271,64 @@ Resources:
   #      OnFailure:
   #        Destination: !Ref OnFailureDestinationSNSTopic
 
+  GenerateStatistics:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generate_campus_days_statistics
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 30
+      Environment:
+        Variables:
+          DOG_HISTORY_TABLE_NAME: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+          DOG_SUMMARY_TABLE_NAME: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+        - S3CrudPolicy:
+            BucketName: the-pups-info-snippets
+      Events:
+        DogHistoryTableUpdated:
+          Type: SNS
+          Properties:
+            Topic: !Ref CampusHistoryUpdatedSNSTopic
+
+  GenerateCharts:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generate_campus_days_charts
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 120
+      MemorySize: 256
+      Environment:
+        Variables:
+          DOG_HISTORY_TABLE_NAME: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+          DOG_SUMMARY_TABLE_NAME: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - arn:aws:lambda:us-west-2:596489275888:layer:plotlylibs:1
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+      Events:
+        DogHistoryTableUpdated:
+          Type: SNS
+          Properties:
+            Topic: !Ref CampusHistoryUpdatedSNSTopic
+
   # Common code layer used by other python modules in this template.
   ThePupsLibraryLayer:
     Type: AWS::Serverless::LayerVersion
@@ -309,11 +367,11 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Principal: '*'
-          Action:
-            - s3:GetObject
-          Effect: Allow
-          Resource: !Sub '${ThePupsInfoSnippetsBucket.Arn}/*'
+          - Principal: '*'
+            Action:
+              - s3:GetObject
+            Effect: Allow
+            Resource: !Sub '${ThePupsInfoSnippetsBucket.Arn}/*'
 
 
   CampusDogHistoryDynDB:
@@ -349,8 +407,8 @@ Resources:
         WriteCapacityUnits: 5
 
   CampusHistoryUpdatedSNSTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-          TopicName: !Sub "${Env}-${ThePupsCampusHistoryUpdatedSnsName}"
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${Env}-${ThePupsCampusHistoryUpdatedSnsName}"
 
 #Outputs:

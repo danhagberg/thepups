@@ -3,7 +3,7 @@ import math
 import pytest
 from datetime import date, datetime, timedelta
 
-from calculate_shift_counts import app
+from thepups_workflow.calculate_shift_counts import app
 
 # Common day used in following tests
 test_day = date(2020, 1, 20)

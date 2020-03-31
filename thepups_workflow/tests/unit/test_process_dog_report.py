@@ -1,10 +1,6 @@
-import json
-
 import pytest
-import moto
 
-from process_dog_report import app
-import os
+from thepups_workflow.process_dog_report import app
 
 
 @pytest.fixture()

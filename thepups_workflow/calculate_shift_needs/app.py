@@ -268,7 +268,7 @@ def create_needs_output(needs_df):
         needs_html = get_all_shifts_covered_html()
     else:
         formatted_needs_df = format_shift_counts(needs_df)
-    needs_html = get_needs_as_html(formatted_needs_df)
+        needs_html = get_needs_as_html(formatted_needs_df)
     thepups.write_to_s3(snippets_bucket, 'dbs_shift_needs.html', needs_html)
     thepups.write_to_s3('the-pups-info-snippets', 'dbs_shift_needs_timestamp.html',
                         datetime.strftime(datetime.now(), '%A, %b %d, %Y at %I:%M %p '))

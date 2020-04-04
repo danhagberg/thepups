@@ -296,7 +296,7 @@ def lambda_handler(event, context):
     shift_counts_df = get_shift_counts(processed_bucket, shift_counts_file)
     dog_counts_range = dog_counts_df.index.min(), dog_counts_df.index.max()
     shift_range = shift_counts_df.Start.min(), shift_counts_df.Start.max()
-    if thepups.is_within_or_overlap(dog_counts_range, shift_range):
+    if thepups.is_within_or_overlap(shift_range, dog_counts_range):
         needs_df = calculate_needs(dog_counts_df, shift_counts_df, shift_exceptions_file)
         create_needs_output(needs_df)
     else:

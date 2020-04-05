@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<?php $env_array = parse_ini_file('cfg.ini')?>
+<?php include("./cfg.php")?>
 <head>
     <?php include("./common_head.html") ?>
 </head>
@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-md-12">
             <h2>Dog Info 1</h2>
-            <?php include("https://prod-the-pups-snippets-2020.s3.amazonaws.com/dog_info.html") ?>
+            <?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dog_info.html") ?>
         </div>
     </div>
 

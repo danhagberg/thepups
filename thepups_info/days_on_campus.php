@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<?php $env_array = parse_ini_file('cfg.ini')?>
+<?php include("./cfg.php")?>
 <head>
     <?php include("./common_head.html") ?>
 </head>
@@ -13,27 +13,27 @@
 			<p>
 			Total days is defined as days during period in which the dog showed up on the exercise list. Days may or may not be continuous.
 			</p>
-			<b>Report Period: <?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/report_period.html") ?></b>
+			<b>Report Period: <?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/report_period.html") ?></b>
 			<hr>
 			<h4>All Dogs</h4>
 			<div class="stats_table">
-				<?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_table.html") ?>
+				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_table.html") ?>
 			</div>
 			<hr>
 			<h4>Total Days on Campus by Age</h4>
 			Days on campus broken out by age group
 			<div class="stats_table">
-				<?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_age_table.html") ?>
+				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_age_table.html") ?>
 			</div>
-				<?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_age_chart.html") ?>
+				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_age_chart.html") ?>
 			<hr>
 			<h4>Total Days on Campus by Weight</h4>
 			Days on campus broken out by weight group
 			<div class="stats_table">
-				<?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_weight_table.html") ?>
+				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_weight_table.html") ?>
 			</div>
-				<?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_weight_chart.html") ?>
-            <!--<?php include("https://" . $env_array['STAGE'] . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_histogram_chart.html") ?>-->
+				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_on_campus_by_weight_chart.html") ?>
+            <!--<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/days_on_campus/days_histogram_chart.html") ?>-->
         </div>
     </div>
 

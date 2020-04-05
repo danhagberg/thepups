@@ -1,0 +1,3 @@
+<?php
+$STAGE = "prod"
+?>

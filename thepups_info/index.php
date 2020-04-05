@@ -26,11 +26,13 @@
 			
 			<div class="col-md-4">
 				<h2>Shift Counts *</h2>
+				<br>
+				<div class="announcement">All Shift Cancelled Due to Shelter Closure</div>
+				<!--
 				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dbs_shift_counts.html") ?>
 				<br>
-				<em>* No Green DBS volunteers during the shelter shutdown.</em>
-				<br>
 				<em>Shift counts current as of <?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dbs_shift_counts_timestamp.html") ?> </em>
+				-->
 			</div>
 			
 			<div class="col-md-4">

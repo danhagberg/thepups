@@ -25,9 +25,8 @@
 			</div>
 			
 			<div class="col-md-4">
-				<h2>Shift Counts *</h2>
-				<br>
-				<div class="announcement">All Shift Cancelled Due to Shelter Closure</div>
+				<h2>Shift Counts</h2>
+				<div class="announcement">All Shifts Cancelled Due to Shelter Closure</div>
 				<!--
 				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dbs_shift_counts.html") ?>
 				<br>

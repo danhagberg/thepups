@@ -22,7 +22,7 @@ def get_days_on_campus_age_weight_heatmap(clean_summary_df: pd.DataFrame, period
     data = go.Heatmap(x=clean_summary_df.age_group, y=clean_summary_df.weight_group, z=clean_summary_df.days_on_campus)
     layout = go.Layout(title='Days on Campus')
     fig = go.Figure(data=data, layout=layout)
-    return plo.plot(fig, output_type='div')
+    return plo.plot(fig, output_type='div', include_plotlyjs='cdn')
 
 
 def get_days_on_campus_chart(clean_summary_df: pd.DataFrame, group: str, x: str, period: tuple,
@@ -42,7 +42,7 @@ def get_days_on_campus_chart(clean_summary_df: pd.DataFrame, group: str, x: str,
     layout = go.Layout(title_text=f'Total Days on Campus by {chart_title} from {period[0]} to {period[1]}', bargap=0.2,
                        yaxis_title='Cumulative Days on Campus', xaxis_title=chart_title)
     fig = go.Figure(data=traces, layout=layout)
-    return plo.plot(fig, output_type='div')
+    return plo.plot(fig, output_type='div', include_plotlyjs='cdn')
 
 
 def lambda_handler(event, context):

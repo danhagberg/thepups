@@ -11,6 +11,10 @@
 		
 		<h2>Release Notes</h2>
 		
+		<h3>1.5 - Dog History</h3>
+
+		<div>New page to show all dogs on campus since the start of data recording. </div>
+
 		<h3>1.4 - Days on Campus Stats Page</h3>
 		
 		<div>New page to show numbers of days on campus statistics.  Includes all population during reporting period as well as breakdowns by age and weight.</div>

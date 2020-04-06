@@ -10,7 +10,7 @@
     <!-- Example row of columns -->
     <div class="row">
         <div class="col-md-12">
-            <h2>Dog Info 1</h2>
+            <h2>Dogs Currently on Campus</h2>
             <?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dog_info.html") ?>
         </div>
     </div>

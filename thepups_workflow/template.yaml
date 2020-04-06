@@ -271,6 +271,32 @@ Resources:
   #      OnFailure:
   #        Destination: !Ref OnFailureDestinationSNSTopic
 
+  CompileDogHistory:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: compile_dog_info_history
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 30
+      Environment:
+        Variables:
+          DOG_HISTORY_TABLE_NAME: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+          DOG_SUMMARY_TABLE_NAME: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+      Events:
+        DogHistoryTableUpdated:
+          Type: SNS
+          Properties:
+            Topic: !Ref CampusHistoryUpdatedSNSTopic
+
   GenerateStatistics:
     Type: AWS::Serverless::Function
     Properties:
@@ -292,7 +318,7 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Sub "${Env}-${ThePupsDogSummaryTableName}"
         - S3CrudPolicy:
-            BucketName: the-pups-info-snippets
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
       Events:
         DogHistoryTableUpdated:
           Type: SNS

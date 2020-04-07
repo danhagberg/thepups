@@ -14,7 +14,7 @@ shift = datetime.fromisoformat('2020-04-02 07:30:00'), datetime.fromisoformat('2
 needs = datetime.fromisoformat('2020-04-04 00:00:00'), datetime.fromisoformat('2020-04-08 00:00:00')
 
 def test_shift_needs():
-    answer = the_pups.is_within_or_overlap(needs, shift)
+    answer = the_pups.is_within_or_overlap(shift, needs)
     assert answer is True
 
 # Common day used in following tests

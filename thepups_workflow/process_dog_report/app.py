@@ -26,11 +26,12 @@ def get_age_in_months(in_text):
     return age_in_months
 
 
-def get_name(in_text):
-    name = in_text.split(',')[0]
-    name = name.split('- Adop')[0]
-    name = name.split('*')[0]
-    return name.strip()
+def get_name(in_name):
+    pat = re.compile('[-]?[ ]?(adopt|pend)', flags=re.IGNORECASE)
+    parts = in_name.split(',')
+    parts = parts[0].split('*')
+    parts = re.split(pat, parts[0])
+    return parts[0].strip()
 
 
 def get_weight(in_text):
@@ -197,7 +198,7 @@ def lambda_handler(event, context):
     dogs, report_time = get_dogs(dog_list_csv)
     dogs_df = get_dog_dataframe(dogs)
     thepups.write_to_s3(snippets_bucket, 'dog_count_timestamp.html',
-                datetime.strftime(report_time, '%A, %b %d, %Y at %I:%M %p '))
+                        datetime.strftime(report_time, '%A, %b %d, %Y at %I:%M %p '))
     thepups.write_to_s3(snippets_bucket, 'dbs_dog_counts.html', get_dog_counts_as_html(filter_for_dbs(dogs_df)))
     thepups.write_to_s3(snippets_bucket, 'staff_dog_counts.html', get_dog_counts_as_html(filter_for_non_dbs(dogs_df)))
     thepups.write_to_s3(snippets_bucket, 'dog_info.html', get_dog_info_as_html(dogs_df))

@@ -80,6 +80,7 @@ name_test_data = [
     ('Manning Mixed Breed, Medium (up to 44 lbs fully grown)/Mix', 'Manning Mixed Breed'),
     ('Hazel Australian Cattle Dog/Mix', 'Hazel Australian Cattle Dog/Mix'),
     ('Prancy Clancy Retriever, Labrador/Mix', 'Prancy Clancy Retriever'),
+    ('Aster-Pending Adoption Chihuahua', 'Aster'),
     ('T-Rex Retriever, Labrador/Basset Hound', 'T-Rex Retriever')
 ]
 

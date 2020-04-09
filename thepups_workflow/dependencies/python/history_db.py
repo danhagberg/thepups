@@ -72,4 +72,6 @@ def get_counts_by_date(history_df: pd.DataFrame) -> pd.DataFrame:
                           inplace=True)
     counts_by_date.drop(columns=['bite', 'stress', 'dbs', 'team'], inplace=True)
     counts_by_date['Nbr of Dogs'] = counts_by_date.DBS + counts_by_date.Staff
-    return counts_by_date
+    counts_by_date_filled = counts_by_date.asfreq('D')
+    counts_by_date_filled.fillna(0, inplace=True)
+    return counts_by_date_filled

@@ -29,7 +29,7 @@ def get_formatted_period(period: tuple) -> str:
 
 def lambda_handler(event, context):
     summary_df = hdb.dataframe_from_summary()
-    period = hdb.get_history_dates(summary_df)
+    period = hdb.get_summary_dates(summary_df)
     tp.write_to_s3(snippets_bucket, 'all_dog_info.html', get_dog_info_as_html(summary_df))
 
     tp.write_to_s3(snippets_bucket, 'all_dog_info_report_period.html', get_formatted_period(period))

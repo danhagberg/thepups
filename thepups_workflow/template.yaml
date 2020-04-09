@@ -297,7 +297,7 @@ Resources:
           Properties:
             Topic: !Ref CampusHistoryUpdatedSNSTopic
 
-  GenerateStatistics:
+  GenerateDaysOnCampusStatistics:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: generate_campus_days_statistics
@@ -325,7 +325,7 @@ Resources:
           Properties:
             Topic: !Ref CampusHistoryUpdatedSNSTopic
 
-  GenerateCharts:
+  GenerateDaysOnCampusCharts:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: generate_campus_days_charts
@@ -347,6 +347,60 @@ Resources:
             TableName: !Sub "${Env}-${ThePupsDogHistoryTableName}"
         - DynamoDBReadPolicy:
             TableName: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+      Events:
+        DogHistoryTableUpdated:
+          Type: SNS
+          Properties:
+            Topic: !Ref CampusHistoryUpdatedSNSTopic
+
+  GenerateCampusHistoryStatistics:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generate_campus_history_statistics
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 30
+      Environment:
+        Variables:
+          DOG_HISTORY_TABLE_NAME: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+          DOG_SUMMARY_TABLE_NAME: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+        - S3CrudPolicy:
+            BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
+      Events:
+        DogHistoryTableUpdated:
+          Type: SNS
+          Properties:
+            Topic: !Ref CampusHistoryUpdatedSNSTopic
+
+  GenerateCampusHistoryCharts:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generate_campus_history_charts
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 120
+      MemorySize: 256
+      Environment:
+        Variables:
+          DOG_HISTORY_TABLE_NAME: !Sub "${Env}-${ThePupsDogHistoryTableName}"
+          DOG_SUMMARY_TABLE_NAME: !Sub "${Env}-${ThePupsDogSummaryTableName}"
+      Layers:
+        - arn:aws:lambda:us-west-2:596489275888:layer:pandas-0-25:2
+        - arn:aws:lambda:us-west-2:596489275888:layer:plotlylibs:1
+        - !Ref ThePupsLibraryLayer
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBReadPolicy:
+            TableName: !Sub "${Env}-${ThePupsDogHistoryTableName}"
         - S3CrudPolicy:
             BucketName: !Sub "${Env}-${ThePupsInfoSnippetsBucketName}"
       Events:

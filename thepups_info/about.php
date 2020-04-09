@@ -11,6 +11,10 @@
 		
 		<h2>Release Notes</h2>
 		
+		<h3>1.6 - Dog History Stats</h3>
+
+		<div>New page to show all historical counts of dogs on campus.</div>
+
 		<h3>1.5 - Dog History</h3>
 
 		<div>New page to show all dogs on campus since the start of data recording. </div>

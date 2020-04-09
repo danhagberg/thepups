@@ -54,7 +54,7 @@ def get_formatted_period(period: tuple) -> str:
 
 def lambda_handler(event, context):
     summary_df = hdb.dataframe_from_summary()
-    period = hdb.get_history_dates(summary_df)
+    period = hdb.get_summary_dates(summary_df)
     clean_summary_df = hdb.remove_zero_values(summary_df)
     clean_summary_df = hdb.group_by_age(clean_summary_df)
     clean_summary_df = hdb.group_by_weight(clean_summary_df)

@@ -40,6 +40,10 @@ def dataframe_from_history() -> pd.DataFrame:
     return dog_history_df
 
 
+def get_history_dates(history_df: pd.DataFrame) -> tuple:
+    return date.fromtimestamp(history_df.record_date.min()), date.fromtimestamp(history_df.record_date.max())
+
+
 def dataframe_from_summary() -> pd.DataFrame:
     summary_scan_response = summary_table.scan()
     summary_scan_items = summary_scan_response['Items']
@@ -54,5 +58,18 @@ def dataframe_from_summary() -> pd.DataFrame:
     return dog_summary_df
 
 
-def get_history_dates(summary_df: pd.DataFrame) -> tuple:
+def get_summary_dates(summary_df: pd.DataFrame) -> tuple:
     return summary_df.date.min(), summary_df.date.max()
+
+
+def get_counts_by_date(history_df: pd.DataFrame) -> pd.DataFrame:
+    history_df['date'] = history_df.record_date.astype('int64')
+    history_df['date'] = history_df.date.astype('datetime64[s]')
+    dog_level_history_df = pd.concat(
+        [history_df, pd.get_dummies(history_df.Level), pd.get_dummies(history_df.dbs, prefix='dbs')], axis=1)
+    counts_by_date = dog_level_history_df.groupby('date').sum().astype('int32')
+    counts_by_date.rename(columns={'dbs_True': 'DBS', 'dbs_False': 'Staff', 'holder': 'Holder', 'kc': 'KC'},
+                          inplace=True)
+    counts_by_date.drop(columns=['bite', 'stress', 'dbs', 'team'], inplace=True)
+    counts_by_date['Nbr of Dogs'] = counts_by_date.DBS + counts_by_date.Staff
+    return counts_by_date

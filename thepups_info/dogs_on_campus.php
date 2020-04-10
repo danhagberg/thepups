@@ -37,6 +37,9 @@
 				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dogs_on_campus/stats_by_staff_level_table.html") ?>
 			</div>
 				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dogs_on_campus/stats_by_staff_level_chart.html") ?>
+			<hr>
+			<h4>History of Kennel Cough on Campus</h4>
+				<?php include("https://" . $STAGE . "-the-pups-snippets-2020.s3.amazonaws.com/dogs_on_campus/stats_by_kc_chart.html") ?>
         </div>
     </div>
 

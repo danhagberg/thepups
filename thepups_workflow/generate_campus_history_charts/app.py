@@ -25,7 +25,7 @@ def get_count_by_group_chart(counts_by_date: pd.DataFrame) -> str:
         go.Scatter(x=counts_by_date.index, y=counts_by_date['Staff'], mode='lines', name='Staff', stackgroup='all')
     ]
     group_layout = go.Layout(title=go.layout.Title(text='Dogs on Campus by Group - Stacked'), hovermode='x',
-                           yaxis_title="Number of Dogs", xaxis_title="Date")
+                             yaxis_title="Number of Dogs", xaxis_title="Date")
     fig = go.Figure(data=area_by_group, layout=group_layout)
     return fig
 
@@ -65,6 +65,20 @@ def get_count_by_dbs_level_chart(counts_by_date: pd.DataFrame) -> str:
     return fig
 
 
+def get_count_by_kc_chart(counts_by_date: pd.DataFrame) -> str:
+    area_by_kc = [
+        go.Scatter(x=counts_by_date.index, y=counts_by_date['KC'], mode='lines', name='Dogs with KC',
+                   marker_color='Blue',
+                   stackgroup='KC'),
+        go.Scatter(x=counts_by_date.index, y=counts_by_date['Nbr of Dogs'], mode='lines', name='Dogs on Campus',
+                   marker_color='Orange', stackgroup='Dogs')
+    ]
+    kc_layout = go.Layout(title=go.layout.Title(text='Dogs on Campus with Kennel Cough'), hovermode='x',
+                          yaxis_title="Number of Dogs", xaxis_title="Date")
+    fig = go.Figure(data=area_by_kc, layout=kc_layout)
+    return fig
+
+
 def lambda_handler(event, context):
     dog_history_df = hdb.dataframe_from_history()
     period = hdb.get_history_dates(dog_history_df)
@@ -79,6 +93,9 @@ def lambda_handler(event, context):
 
     chart = get_count_by_staff_level_chart(counts_by_date_df)
     tp.write_to_s3(snippets_bucket, f'{folder_name}/stats_by_staff_level_chart.html', get_chart_as_html(chart))
+
+    chart = get_count_by_kc_chart(counts_by_date_df)
+    tp.write_to_s3(snippets_bucket, f'{folder_name}/stats_by_kc_chart.html', get_chart_as_html(chart))
 
     return {
         'statusCode': 200,
